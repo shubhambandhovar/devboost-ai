@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { callApi } from '../utils/api'
 import { Loader2, Copy, Check } from 'lucide-react'
 import MarkdownRenderer from './MarkdownRenderer'
+import { useToast } from '../context/ToastContext'
 
 export default function CodeExplainer() {
   const [code, setCode] = useState('')
@@ -9,6 +10,7 @@ export default function CodeExplainer() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const { showToast } = useToast()
 
   const handleExplain = async () => {
     if (!code.trim()) return
@@ -30,8 +32,10 @@ export default function CodeExplainer() {
   const handleCopy = () => {
     navigator.clipboard.writeText(result)
     setCopied(true)
+    showToast('Explanation copied to clipboard!', 'success')
     setTimeout(() => setCopied(false), 2000)
   }
+
 
   return (
     <div className="space-y-6 animate-fade-in">

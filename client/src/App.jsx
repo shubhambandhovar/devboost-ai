@@ -2,6 +2,7 @@ import { useState } from 'react'
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 import Sidebar from './components/Sidebar'
 import CodeExplainer from './components/CodeExplainer'
 import ReadmeGenerator from './components/ReadmeGenerator'
@@ -49,45 +50,47 @@ function ToolLayout() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          
-          {/* Standalone Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-          <Route path="/dashboard" element={
-            <div className="h-screen overflow-y-auto p-8 bg-dark">
-              <Dashboard />
-              <InteractiveChat />
-            </div>
-          } />
-          
-          {/* App Layout (with Sidebar) */}
-          <Route element={<AppLayout />}>
-            <Route path="/history" element={<History />} />
-            <Route path="/pricing" element={<Pricing />} />
+    <ToastProvider>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
-            {/* Tool Layout (centered constraints) */}
-            <Route element={<ToolLayout />}>
-              <Route path="/explain-code" element={<CodeExplainer />} />
-              <Route path="/generate-readme" element={<ReadmeGenerator />} />
-              <Route path="/generate-commit" element={<CommitGenerator />} />
-              <Route path="/debug-bug" element={<BugDebugger />} />
-              <Route path="/refactor-code" element={<CodeRefactorer />} />
-              <Route path="/translate-code" element={<CodeTranslator />} />
-              <Route path="/generate-regex" element={<RegexGenerator />} />
-              <Route path="/generate-unit-test" element={<UnitTestGenerator />} />
-              <Route path="/scan-security" element={<SecurityScanner />} />
-              <Route path="/generate-database" element={<DatabaseGenerator />} />
-              <Route path="/plan-architecture" element={<ArchitecturePlanner />} />
+            {/* Standalone Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            <Route path="/dashboard" element={
+              <div className="h-screen overflow-y-auto p-8 bg-dark">
+                <Dashboard />
+                <InteractiveChat />
+              </div>
+            } />
+            
+            {/* App Layout (with Sidebar) */}
+            <Route element={<AppLayout />}>
+              <Route path="/history" element={<History />} />
+              <Route path="/pricing" element={<Pricing />} />
+              
+              {/* Tool Layout (centered constraints) */}
+              <Route element={<ToolLayout />}>
+                <Route path="/explain-code" element={<CodeExplainer />} />
+                <Route path="/generate-readme" element={<ReadmeGenerator />} />
+                <Route path="/generate-commit" element={<CommitGenerator />} />
+                <Route path="/debug-bug" element={<BugDebugger />} />
+                <Route path="/refactor-code" element={<CodeRefactorer />} />
+                <Route path="/translate-code" element={<CodeTranslator />} />
+                <Route path="/generate-regex" element={<RegexGenerator />} />
+                <Route path="/generate-unit-test" element={<UnitTestGenerator />} />
+                <Route path="/scan-security" element={<SecurityScanner />} />
+                <Route path="/generate-database" element={<DatabaseGenerator />} />
+                <Route path="/plan-architecture" element={<ArchitecturePlanner />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </Router>
-    </AuthProvider>
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ToastProvider>
   )
 }
 
