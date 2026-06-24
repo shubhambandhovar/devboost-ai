@@ -31,7 +31,7 @@ export default function DatabaseGenerator() {
       return;
     }
 
-    const match = result.match(/```mermaid([\s\S]*?)```/);
+    const match = result.match(/```mermaid\s*([\s\S]*?)```/i);
     const code = match ? match[1].trim() : null;
 
     if (code) {
@@ -164,13 +164,6 @@ export default function DatabaseGenerator() {
             {result && (
               <div className="flex items-center gap-3">
                 <ExportButtons content={result} filename={`schema-${dbType.toLowerCase()}`} />
-                <button 
-                  onClick={handleCopy}
-                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-sm bg-dark p-2 rounded-md border border-dark-lighter hover:border-gray-500 h-[34px]"
-                >
-                  {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
               </div>
             )}
           </div>
