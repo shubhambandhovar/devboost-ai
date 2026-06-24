@@ -65,8 +65,8 @@ export default function DatabaseGenerator() {
       setDiagramUrl(null);
     }
     
-    // Always reset tab to code on new output
-    setActiveTab('code');
+    // Automatically switch to diagram if valid, otherwise fallback to code
+    setActiveTab(code ? 'diagram' : 'code');
     setScale(1);
   }, [result]);
 
