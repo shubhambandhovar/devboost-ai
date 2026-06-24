@@ -37,12 +37,23 @@ const callGeminiWithFallback = async (contents) => {
       contents: contents,
     });
   } catch (error) {
-    if (error.status === 503 || (error.message && error.message.includes('503'))) {
-      console.warn('Gemini 2.5 Flash is unavailable (503). Falling back to Gemini 1.5 Flash...');
-      return await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: contents,
-      });
+    const isRateLimitOrUnavailable = error.status === 503 || error.status === 429 || (error.message && (error.message.includes('503') || error.message.includes('429') || error.message.includes('quota')));
+    
+    if (isRateLimitOrUnavailable) {
+      console.warn('Gemini 2.5 Flash is unavailable/rate-limited. Falling back to Gemini 1.5 Flash...');
+      try {
+        return await ai.models.generateContent({
+          model: 'gemini-1.5-flash',
+          contents: contents,
+        });
+      } catch (fallbackError) {
+         if (fallbackError.status === 429 || (fallbackError.message && fallbackError.message.includes('quota'))) {
+            const err = new Error('AI Rate Limit Exceeded. Please wait 60 seconds and try again.');
+            err.status = 429;
+            throw err;
+         }
+         throw fallbackError;
+      }
     }
     throw error;
   }
@@ -61,7 +72,9 @@ exports.explainCode = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error explaining code:', error);
-    res.status(500).json({ error: 'Failed to explain code' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to explain code';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -80,7 +93,9 @@ exports.generateReadme = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error generating README:', error);
-    res.status(500).json({ error: 'Failed to generate README' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to generate README';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -97,7 +112,9 @@ exports.generateCommit = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error generating commit message:', error);
-    res.status(500).json({ error: 'Failed to generate commit message' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to generate commit message';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -114,7 +131,9 @@ exports.debugBug = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error debugging bug:', error);
-    res.status(500).json({ error: 'Failed to debug bug' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to debug bug';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -131,7 +150,9 @@ exports.refactorCode = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error refactoring code:', error);
-    res.status(500).json({ error: 'Failed to refactor code' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to refactor code';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -148,7 +169,9 @@ exports.translateCode = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error translating code:', error);
-    res.status(500).json({ error: 'Failed to translate code' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to translate code';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -165,7 +188,9 @@ exports.generateRegex = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error generating regex:', error);
-    res.status(500).json({ error: 'Failed to generate regex' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to generate regex';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -219,7 +244,9 @@ Include an introduction, features section (inferred from description/topics), te
     res.json({ result: output });
   } catch (error) {
     console.error('Error generating GitHub README:', error);
-    res.status(500).json({ error: 'Failed to generate README from GitHub' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to generate README from GitHub';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -239,7 +266,9 @@ exports.generateUnitTest = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error generating unit test:', error);
-    res.status(500).json({ error: 'Failed to generate unit test' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to generate unit test';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -261,7 +290,9 @@ exports.scanSecurity = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error scanning security:', error);
-    res.status(500).json({ error: 'Failed to complete security scan' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to complete security scan';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -292,7 +323,9 @@ exports.generateDatabase = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error generating database schema:', error);
-    res.status(500).json({ error: 'Failed to generate database schema' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to generate database schema';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -319,7 +352,9 @@ exports.planArchitecture = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error planning architecture:', error);
-    res.status(500).json({ error: 'Failed to plan architecture' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to plan architecture';
+    res.status(status).json({ error: message });
   }
 };
 
@@ -355,6 +390,8 @@ exports.aiChat = async (req, res) => {
     res.json({ result: output });
   } catch (error) {
     console.error('Error in AI Chat:', error);
-    res.status(500).json({ error: 'Failed to process chat message' });
+    const status = error.status || 500;
+    const message = error.status === 429 ? error.message : 'Failed to process chat message';
+    res.status(status).json({ error: message });
   }
 };
