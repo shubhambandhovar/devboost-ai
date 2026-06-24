@@ -36,3 +36,76 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* Premium Login/Register Animations */
+@keyframes float-blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.08);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bg-glow-pulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes grid-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 40px;
+  }
+}
+
+.animate-float-blob {
+  animation: float-blob 20s infinite ease-in-out;
+}
+
+.animate-float-blob-reverse {
+  animation: float-blob 25s infinite ease-in-out reverse;
+}
+
+.animate-bg-glow-pulse {
+  animation: bg-glow-pulse 8s infinite ease-in-out;
+}
+
+.animate-slide-up-fade {
+  opacity: 0; /* Started as hidden, animated by JS or inline styles */
+  animation: slide-up-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  animation: grid-drift 30s linear infinite;
+}
+
