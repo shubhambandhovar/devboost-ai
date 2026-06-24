@@ -31,8 +31,19 @@ export default function DatabaseGenerator() {
       return;
     }
 
-    const match = result.match(/```mermaid\s*([\s\S]*?)```/i);
-    const code = match ? match[1].trim() : null;
+    // Robust extraction:
+    // 1. Try matching a block delimited by ```mermaid ... ``` or ```erDiagram ... ``` or ```er ... ``` (with or without ending backticks)
+    let code = null;
+    const mermaidBlockMatch = result.match(/```(?:mermaid|erDiagram|er)?\s*(erDiagram[\s\S]*?)(?:```|$)/i);
+    if (mermaidBlockMatch) {
+      code = mermaidBlockMatch[1].trim();
+    } else {
+      // 2. Try matching erDiagram directly in the text (with or without ending backticks)
+      const erDiagramMatch = result.match(/(erDiagram[\s\S]*?)(?:```|$)/i);
+      if (erDiagramMatch) {
+        code = erDiagramMatch[1].trim();
+      }
+    }
 
     if (code) {
       setMermaidCode(code);

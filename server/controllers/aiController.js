@@ -19,8 +19,13 @@ const saveHistory = async (reqUser, feature, input, output) => {
 };
 
 const cleanMarkdown = (text) => {
-  // Remove starting ```markdown or ``` and ending ```
-  return text.replace(/^```(?:markdown|md|html)?\n/i, '').replace(/\n```$/i, '').trim();
+  // Only strip the outer markdown/html block if the ENTIRE response is wrapped in it.
+  const startRegex = /^```(?:markdown|md|html)?\n/i;
+  const endRegex = /\n```$/i;
+  if (startRegex.test(text) && endRegex.test(text)) {
+    return text.replace(startRegex, '').replace(endRegex, '').trim();
+  }
+  return text.trim();
 };
 
 exports.explainCode = async (req, res) => {
