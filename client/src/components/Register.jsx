@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Loader2, Sparkles, Code2, Database, ShieldAlert } from 'lucide-react';
@@ -12,6 +12,26 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { register, googleLogin } = useAuth();
   const navigate = useNavigate();
+
+  const [loadingStep, setLoadingStep] = useState(0);
+  const loadingMessages = [
+    'Creating developer account...',
+    'Generating database profile...',
+    'Bootstrapping workspace features...',
+    'Wrapping things up...'
+  ];
+
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      interval = setInterval(() => {
+        setLoadingStep((prev) => (prev + 1) % loadingMessages.length);
+      }, 1500);
+    } else {
+      setLoadingStep(0);
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,6 +59,7 @@ export default function Register() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex bg-dark overflow-hidden relative">
@@ -96,6 +117,30 @@ export default function Register() {
       {/* Right Panel - Register Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative">
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
+
+        {/* Loading Overlay */}
+        {loading && (
+          <div className="absolute inset-0 bg-dark/85 backdrop-blur-md flex flex-col items-center justify-center z-50 transition-all duration-300">
+            <div className="relative flex items-center justify-center">
+              {/* Outer spinning ring */}
+              <div className="w-20 h-20 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+              
+              {/* Inner reverse spinning ring */}
+              <div className="absolute w-14 h-14 border-2 border-purple-500/20 border-b-purple-500 rounded-full animate-spin [animation-direction:reverse]"></div>
+              
+              {/* Glowing center orb */}
+              <div className="absolute w-6 h-6 bg-primary rounded-full blur-[4px] animate-pulse"></div>
+            </div>
+            
+            <div className="mt-8 text-center space-y-2 px-6 max-w-xs">
+              <h3 className="text-lg font-bold text-white tracking-wide">Creating Account</h3>
+              <p className="text-sm text-gray-400 animate-pulse min-h-[40px] leading-relaxed">
+                {loadingMessages[loadingStep]}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="w-full max-w-md space-y-8 relative z-10">
           <div className="text-center animate-slide-up-fade" style={{ animationDelay: '100ms' }}>
             <h2 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Create an Account</h2>
