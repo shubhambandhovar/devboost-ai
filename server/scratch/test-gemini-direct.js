@@ -1,5 +1,5 @@
 require('dotenv').config({ path: 'server/.env' });
-const { generateDatabase } = require('./server/controllers/aiController');
+const { generateDatabase } = require('../controllers/aiController');
 const req = {
     body: {
         description: 'A rental car service with users, cars, bookings, payments, and reviews',

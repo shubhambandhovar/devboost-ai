@@ -29,16 +29,32 @@ const cleanMarkdown = (text) => {
   return text.trim();
 };
 
+
+const callGeminiWithFallback = async (contents) => {
+  try {
+    return await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: contents,
+    });
+  } catch (error) {
+    if (error.status === 503 || (error.message && error.message.includes('503'))) {
+      console.warn('Gemini 2.5 Flash is unavailable (503). Falling back to Gemini 1.5 Flash...');
+      return await ai.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: contents,
+      });
+    }
+    throw error;
+  }
+};
+
 exports.explainCode = async (req, res) => {
   try {
     const { code } = req.body;
     if (!code) return res.status(400).json({ error: 'Code is required' });
 
     const prompt = `Explain the following code in simple, beginner-friendly language:\n\n${code}`;
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Explain Code', { code }, output);
@@ -57,10 +73,7 @@ exports.generateReadme = async (req, res) => {
     }
 
     const prompt = `Create a professional README.md for a project named "${projectName}".\nFeatures: ${features}\nTech Stack: ${techStack}\n\nFormat the output in proper markdown. Do NOT wrap the entire response in a markdown code block. Return the raw text. Include an introduction, features list, tech stack section, installation steps, and usage section.`;
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Generate README', { projectName, features, techStack }, output);
@@ -77,10 +90,7 @@ exports.generateCommit = async (req, res) => {
     if (!changes) return res.status(400).json({ error: 'Changes are required' });
 
     const prompt = `Generate a clean, Git-style commit message based on the following code changes or description. Return ONLY the commit message without any extra text or formatting:\n\n${changes}`;
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Generate Commit', { changes }, output);
@@ -97,10 +107,7 @@ exports.debugBug = async (req, res) => {
     if (!errorMessage) return res.status(400).json({ error: 'Error message is required' });
 
     const prompt = `Act as an expert developer. Analyze the following error message, explain the possible issue in simple terms, and provide a clear solution:\n\n${errorMessage}`;
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Debug Bug', { errorMessage }, output);
@@ -117,10 +124,7 @@ exports.refactorCode = async (req, res) => {
     if (!code) return res.status(400).json({ error: 'Code is required' });
 
     const prompt = `Act as an expert software engineer. Refactor the following messy or unoptimized code to make it clean, efficient, and follow modern best practices. Briefly explain what you optimized at the top:\n\n${code}`;
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Refactor Code', { code }, output);
@@ -137,10 +141,7 @@ exports.translateCode = async (req, res) => {
     if (!code || !targetLanguage) return res.status(400).json({ error: 'Code and target language are required' });
 
     const prompt = `Translate the following code into ${targetLanguage}. Provide ONLY the translated code block and a brief explanation of any language-specific idioms used:\n\n${code}`;
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Translate Code', { code, targetLanguage }, output);
@@ -157,10 +158,7 @@ exports.generateRegex = async (req, res) => {
     if (!description) return res.status(400).json({ error: 'Description is required' });
 
     const prompt = `Generate a Regular Expression (Regex) that matches the following description: "${description}". Provide the exact regex pattern in a code block, followed by a brief explanation of how it works and a few examples of strings that it matches and doesn't match.`;
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Regex Generator', { description }, output);
@@ -214,10 +212,7 @@ Default Branch: ${repoData.default_branch}
 Format the output in proper markdown. Do NOT wrap the entire response in a markdown code block. Return the raw text. 
 Include an introduction, features section (inferred from description/topics), tech stack section (inferred from languages), a placeholder installation steps section (like git clone https://github.com/${owner}/${repo}.git), and usage section.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'GitHub README', { repoUrl }, output);
@@ -237,10 +232,7 @@ exports.generateUnitTest = async (req, res) => {
     Ensure you cover the happy path, edge cases, and potential error states.
     Provide ONLY the code block containing the tests and a brief explanation of what edge cases were covered:\n\n${code}`;
     
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Generate Unit Test', { code, framework }, output);
@@ -262,10 +254,7 @@ exports.scanSecurity = async (req, res) => {
     3. Provide a secure, refactored version of the code that mitigates these vulnerabilities.
     If the code appears perfectly secure, state that, but suggest any general hardening best practices:\n\n${code}`;
     
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Security Scan', { code }, output);
@@ -296,10 +285,7 @@ exports.generateDatabase = async (req, res) => {
        
     Keep explanations and queries to an absolute minimum or omit them entirely to ensure the generation is extremely fast (must complete in under 15 seconds). Provide the code in proper markdown code blocks.`;
     
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Database Generator', { description, dbType }, output);
@@ -326,10 +312,7 @@ exports.planArchitecture = async (req, res) => {
     
     Format the output in clean, readable markdown using appropriate headings, bullet points, and bold text.`;
     
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    const response = await callGeminiWithFallback(prompt);
 
     const output = cleanMarkdown(response.text);
     await saveHistory(req.user, 'Architecture Planner', { requirements }, output);
@@ -361,10 +344,7 @@ exports.aiChat = async (req, res) => {
       contents[0].parts[0].text = `Act as DevBoost AI, an expert software engineer, architect, and developer assistant. Be concise, accurate, and provide code examples where helpful. User query: ${message}`;
     }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: contents,
-    });
+    const response = await callGeminiWithFallback(contents);
 
     const output = cleanMarkdown(response.text);
     
