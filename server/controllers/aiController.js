@@ -19,6 +19,7 @@ const saveHistory = async (reqUser, feature, input, output) => {
 };
 
 const cleanMarkdown = (text) => {
+  if (!text) return '';
   // Only strip the outer markdown/html block if the ENTIRE response is wrapped in it.
   const startRegex = /^```(?:markdown|md|html)?\n/i;
   const endRegex = /\n```$/i;
