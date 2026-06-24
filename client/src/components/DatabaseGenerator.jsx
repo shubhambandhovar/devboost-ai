@@ -55,7 +55,8 @@ export default function DatabaseGenerator() {
 
       try {
         const base64 = window.btoa(unescape(encodeURIComponent(finalCode)));
-        setDiagramUrl(`https://mermaid.ink/svg/${base64}`);
+        const base64url = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        setDiagramUrl(`https://mermaid.ink/svg/${base64url}`);
       } catch (e) {
         console.error('Failed to encode Mermaid block:', e);
         setDiagramUrl(null);
