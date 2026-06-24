@@ -282,7 +282,14 @@ exports.generateDatabase = async (req, res) => {
     2. If it's Mongoose/Prisma, provide the exact schema definitions.
     3. Include 1 or 2 complex example queries (e.g., JOINs, aggregations) that would be common for this app.
     4. Briefly explain your design choices (e.g., why you used certain relationships or indexes).
-    
+    5. Always generate a Mermaid.js Entity-Relationship (ER) diagram representing the tables and their relations.
+       Format it in a fenced code block with the 'mermaid' language identifier, like:
+       \`\`\`mermaid
+       erDiagram
+         USER ||--o{ POST : writes
+       \`\`\`
+       Ensure correct Mermaid syntax (no HTML tags, use double quotes for labels, and standard ER diagram symbols like ||--o{, }|--||, etc.).
+       
     Provide the code in proper markdown code blocks.`;
     
     const response = await ai.models.generateContent({
